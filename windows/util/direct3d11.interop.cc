@@ -14,9 +14,9 @@ struct D3DFuncs {
   D3DFuncs() {
     auto handle = GetModuleHandle(L"d3d11.dll");
     if (!handle) {
-      return;
+      return; 
     }
-
+          
     CreateDirect3D11DeviceFromDXGIDevice =
         reinterpret_cast<CreateDirect3D11DeviceFromDXGIDeviceFn>(
             GetProcAddress(handle, "CreateDirect3D11DeviceFromDXGIDevice"));

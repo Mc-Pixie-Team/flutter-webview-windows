@@ -5,9 +5,8 @@
 #include <windows.ui.composition.desktop.h>
 #include <windows.ui.composition.h>
 #include <winrt/base.h>
-
 #include <functional>
-
+#include <string>
 class WebviewHost;
 
 enum class WebviewLoadingState { None, Loading, NavigationCompleted };
@@ -77,6 +76,7 @@ struct EventRegistrations {
   EventRegistrationToken source_changed_token_{};
   EventRegistrationToken content_loading_token_{};
   EventRegistrationToken navigation_completed_token_{};
+  EventRegistrationToken navigation_starting_token_;
   EventRegistrationToken history_changed_token_{};
   EventRegistrationToken document_title_changed_token_{};
   EventRegistrationToken cursor_changed_token_{};
@@ -155,6 +155,9 @@ class Webview {
   bool Suspend();
   bool Resume();
 
+  bool isloadURL = FALSE;
+
+  void SetUrlChangedCallback(UrlChangedCallback callback);
   bool SetVirtualHostNameMapping(const std::string& hostName,
                                  const std::string& path,
                                  WebviewHostResourceAccessKind accessKind);

@@ -1,10 +1,10 @@
 #include "webview.h"
 
 #include <wrl.h>
-
+#include <shellapi.h>
 #include <format>
 #include <iostream>
-
+#include <string>
 #include "util/composition.desktop.interop.h"
 #include "util/string_converter.h"
 #include "webview_host.h"
@@ -89,6 +89,7 @@ Webview::Webview(
   is_valid_ = CreateSurface(host->compositor(), hwnd, offscreen_only);
 }
 
+
 Webview::~Webview() {
   if (owns_window_) {
     DestroyWindow(hwnd_);
@@ -168,10 +169,55 @@ void Webview::EnableSecurityUpdates() {
   }
 }
 
+
+
 void Webview::RegisterEventHandlers() {
   if (!webview_) {
     return;
   }
+
+EventRegistrationToken token; // This will store the token
+HRESULT hr = webview_->add_NavigationStarting(
+    Callback<ICoreWebView2NavigationStartingEventHandler>(
+        [this](ICoreWebView2* sender, ICoreWebView2NavigationStartingEventArgs* args) -> HRESULT {
+        
+            wil::unique_cotaskmem_string uri;
+
+            
+            // HRESULT hr = args->get_IsRedirected(&isRedirect);
+            // HRESULT hr1 = args->get_IsUserInitiated(&isUserInitiated);
+            args->get_Uri(&uri);
+            if (Webview::isloadURL) {
+             args->put_Cancel(FALSE);
+              } else {
+                      
+// LPCWSTR d = L"https://www.google.com/search?q=";
+// LPCWSTR f = uri.get();
+// std::wstring df = std::wstring(d) + f;
+// LPCWSTR dfc = df.c_str();
+            // Open the URL in the default system browser
+            ShellExecute(nullptr, L"open", uri.get(), nullptr, nullptr, SW_SHOWNORMAL);
+
+            // Cancel the navigation in the WebView
+            args->put_Cancel(TRUE);
+
+              }
+              std::cout << std::boolalpha;
+          std::cout << Webview::isloadURL << "\n";
+          
+          std::cout << "dfdfdf" << "\n";
+         
+        
+             Webview::isloadURL = FALSE;
+            return S_OK;
+        }).Get(),
+    &token); // Pass the address of the token variable
+
+if (SUCCEEDED(hr)) {
+    event_registrations_.navigation_starting_token_ = token; // Store the token
+} else {
+    // Handle the error
+}
 
   webview_->add_ContentLoading(
       Callback<ICoreWebView2ContentLoadingEventHandler>(
@@ -358,6 +404,7 @@ void Webview::RegisterEventHandlers() {
           })
           .Get(),
       &event_registrations_.new_windows_requested_token_);
+
 
   webview_->add_ContainsFullScreenElementChanged(
       Callback<ICoreWebView2ContainsFullScreenElementChangedEventHandler>(
@@ -577,7 +624,7 @@ void Webview::SetPointerButtonState(WebviewPointerButton button, bool is_down) {
                      : COREWEBVIEW2_MOUSE_EVENT_KIND_MIDDLE_BUTTON_UP;
       break;
     default:
-      kind = static_cast<COREWEBVIEW2_MOUSE_EVENT_KIND>(0);
+      kind = static_cast<COREWEBVIEW2_MOUSE_EVENT_KIND>(0); 
   }
 
   composition_controller_->SendMouseInput(kind, virtual_keys_.state(), 0,
@@ -586,8 +633,8 @@ void Webview::SetPointerButtonState(WebviewPointerButton button, bool is_down) {
 
 void Webview::SendScroll(double delta, bool horizontal) {
   // delta * 6 gives me a multiple of WHEEL_DELTA (120)
-  constexpr auto kScrollMultiplier = 6;
-
+  constexpr auto kScrollMultiplier = 1.4;
+ 
   auto offset = static_cast<short>(delta * kScrollMultiplier);
 
   POINT point;
@@ -618,9 +665,13 @@ void Webview::SetScrollDelta(double delta_x, double delta_y) {
   }
 }
 
+
 void Webview::LoadUrl(const std::string& url) {
   if (IsValid()) {
+   
+    Webview::isloadURL = TRUE;
     webview_->Navigate(util::Utf16FromUtf8(url).c_str());
+   
   }
 }
 
