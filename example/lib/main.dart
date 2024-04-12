@@ -1,7 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
+import 'dart:convert';
+import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http;
+import 'package:markdown/markdown.dart' as md;
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as html;
 import 'package:webview_windows/webview_windows.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -33,6 +40,16 @@ class _ExampleBrowser extends State<ExampleBrowser> {
   final List<StreamSubscription> _subscriptions = [];
   bool _isWebviewSuspended = false;
 
+  File cachHTMLFile = File("C:\\Users\\joshi\\Documents\\GitHub\\flutter-webview-windows\\example\\lib\\html\\index.html");
+
+  final baseUrl = "https://api.curseforge.com";
+  Map<String, String> userHeader = {
+    "Content-type": "application/json",
+    "Accept": "application/json",
+    "x-api-key":
+        "\$2a\$10\$zApu4/n/e1nylJMTZMv5deblPpAWUHXc226sEIP1vxCjlYQoQG3QW",
+  };
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +63,21 @@ class _ExampleBrowser extends State<ExampleBrowser> {
     // and/or custom chromium command line flags
     //await WebviewController.initializeEnvironment(
     //    additionalArguments: '--show-fps-counter');
+    final res = await http.get(Uri.parse('$baseUrl/v1/mods/643605/description'),
+     headers: userHeader);
+    final hit = jsonDecode(utf8.decode(res.bodyBytes));
+    
+    dom.Document docs = html.parse(await 
+            cachHTMLFile
+        .readAsString());
+    //Uri.decodeComponent(encodedComponent)
+    
+    docs.body!.innerHtml = md.markdownToHtml( hit["data"]);
+    
 
+    cachHTMLFile
+        .writeAsStringSync(docs.outerHtml);
+ 
     try {
       await _controller.initialize();
       _subscriptions.add(_controller.url.listen((url) {
@@ -61,7 +92,7 @@ class _ExampleBrowser extends State<ExampleBrowser> {
 
       await _controller.setBackgroundColor(Colors.transparent);
       await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
-      await _controller.loadUrl("C:\\Users\\joshi\\Documents\\GitHub\\flutter-webview-windows\\example\\lib\\html\\index.html");
+      await _controller.loadUrl(cachHTMLFile.path);
       
       if (!mounted) return;
       setState(() {});
@@ -124,7 +155,7 @@ class _ExampleBrowser extends State<ExampleBrowser> {
                 ),
                 IconButton(
                   icon: Icon(Icons.refresh),
-                  splashRadius: 20,
+                  splashRadius:20,
                   onPressed: () {
                     _controller.reload();
                   },

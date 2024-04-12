@@ -9,6 +9,11 @@
 #include "util/string_converter.h"
 #include "webview_host.h"
 
+
+
+
+
+
 using namespace Microsoft::WRL;
 
 namespace {
@@ -195,6 +200,9 @@ HRESULT hr = webview_->add_NavigationStarting(
 // LPCWSTR f = uri.get();
 // std::wstring df = std::wstring(d) + f;
 // LPCWSTR dfc = df.c_str();
+
+
+
             // Open the URL in the default system browser
             ShellExecute(nullptr, L"open", uri.get(), nullptr, nullptr, SW_SHOWNORMAL);
 
@@ -205,7 +213,7 @@ HRESULT hr = webview_->add_NavigationStarting(
               std::cout << std::boolalpha;
           std::cout << Webview::isloadURL << "\n";
           
-          std::cout << "dfdfdf" << "\n";
+          std::wcout << uri.get() << "\n";
          
         
              Webview::isloadURL = FALSE;

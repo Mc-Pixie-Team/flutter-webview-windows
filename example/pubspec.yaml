@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  html: ^0.15.4
+  http: ^1.2.1
+  markdown: ^7.2.2
   webview_windows:
     path: ../
   window_manager: ^0.2.7
