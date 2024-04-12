@@ -701,6 +701,7 @@ bool Webview::Reload() {
   if (!IsValid()) {
     return false;
   }
+   Webview::isloadURL = TRUE;
   return SUCCEEDED(webview_->Reload());
 }
 

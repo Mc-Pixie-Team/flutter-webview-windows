@@ -13,8 +13,14 @@ html *
 }
 * {
   max-width:100% !important;
-  height:auto !important;
+
 }
+
+img {
+  height: auto !important;
+}
+
+
 
 *::-webkit-scrollbar {
    width: 14px;
