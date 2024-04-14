@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -22,21 +24,24 @@ final navigatorKey = GlobalKey<NavigatorState>();
 class WebviewWidget extends StatefulWidget {
   String body;
   File cachHTMLFile;
-  WebviewWidget({Key? key, required this.body, required this.cachHTMLFile})
+  Function(PointerScrollEvent)? onscroll;
+  WebviewWidget({Key? key, required this.body, required this.cachHTMLFile, this.onscroll})
       : super(key: key);
 
   @override
   _WebviewWidgetState createState() => _WebviewWidgetState();
 }
 
-class _WebviewWidgetState extends State<WebviewWidget> {
+class _WebviewWidgetState extends State<WebviewWidget>
+  {
   final _controller = WebviewController();
   final _textController = TextEditingController();
   final List<StreamSubscription> _subscriptions = [];
-
+  double _scrollgl = 100.0;
   @override
   void initState() {
     super.initState();
+    
     initPlatformState();
   }
 
@@ -85,6 +90,8 @@ class _WebviewWidgetState extends State<WebviewWidget> {
       await _controller.loadUrl(widget.cachHTMLFile.path);
 
       if (!mounted) return;
+ 
+
       setState(() {});
     } on PlatformException catch (e) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -117,21 +124,26 @@ class _WebviewWidgetState extends State<WebviewWidget> {
   Widget build(BuildContext context) {
     if (!_controller.value.isInitialized) {
       return const Text(
-        'Not Initialized',
+        'Initializing content',
         style: TextStyle(
-          fontSize: 24.0,
-          fontWeight: FontWeight.w900,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w500,
         ),
       );
     } else {
-      return Container(
-        height: double.infinity,
-        width: double.infinity,
-        child: Webview(
-          _controller,
-          permissionRequested: _onPermissionRequested,
-        ),
-      );
+      return
+       
+       Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: Webview(
+            _controller,
+            onscroll: widget.onscroll,
+            permissionRequested: _onPermissionRequested,
+          ),
+        );
+         
+  
     }
   }
 

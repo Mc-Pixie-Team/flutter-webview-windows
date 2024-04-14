@@ -566,6 +566,7 @@ class WebviewController extends ValueNotifier<WebviewValue> {
 class Webview extends StatefulWidget {
   final WebviewController controller;
   final PermissionRequestedDelegate? permissionRequested;
+  final Function(PointerScrollEvent)? onscroll;
   final double? width;
   final double? height;
 
@@ -585,6 +586,7 @@ class Webview extends StatefulWidget {
       {this.width,
       this.height,
       this.permissionRequested,
+      this.onscroll,
       this.scaleFactor,
       this.filterQuality = FilterQuality.none});
 
@@ -642,6 +644,7 @@ class _WebviewState extends State<Webview> {
         child: SizeChangedLayoutNotifier(
             child: _controller.value.isInitialized
                 ? Listener(
+                 behavior: HitTestBehavior.translucent,
                     onPointerHover: (ev) {
                       // ev.kind is for whatever reason not set to touch
                       // even on touch input
@@ -705,7 +708,10 @@ class _WebviewState extends State<Webview> {
                     onPointerSignal: (signal) {
                       if (signal is PointerScrollEvent) {
                         _controller._setScrollDelta(
-                            -signal.scrollDelta.dx, -signal.scrollDelta.dy);
+                            -(signal.scrollDelta.dx), (-signal.scrollDelta.dy ));
+                        if(widget.onscroll != null) {
+                          widget.onscroll!(signal);
+                        }
                       }
                     },
                     onPointerPanZoomUpdate: (signal) {
